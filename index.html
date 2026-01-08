@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Red Machine</title>
+    <title>Secure Neon Decoder</title>
     <style>
         body {
             background-color: #0d0000;
             margin: 0;
-            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -17,22 +16,30 @@
             font-family: 'Courier New', Courier, monospace;
         }
 
-        /* Machine box jo center mein rahega */
+        /* Password Overlay */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        /* Machine Container (Pehle hidden rahega) */
+        #machine-ui {
+            display: none; 
+            text-align: center;
+        }
+
         .machine-wrapper {
             background: #1a0000;
             border: 4px solid #ff0000;
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 0 50px rgba(255, 0, 0, 0.4);
-            text-align: center;
-            z-index: 10;
-        }
-
-        h1 {
-            color: #ff0000;
-            text-shadow: 0 0 10px #ff0000;
-            margin-bottom: 30px;
-            letter-spacing: 5px;
         }
 
         .display-container {
@@ -45,72 +52,71 @@
         }
 
         .slot {
-            width: 60px;
-            height: 90px;
+            width: 60px; height: 90px;
             background: #050000;
             border: 1px solid #ff0000;
             border-radius: 5px;
-            font-size: 60px;
-            line-height: 90px;
-            font-weight: bold;
-            color: #ff0000;
+            font-size: 60px; line-height: 90px;
+            font-weight: bold; color: #ff0000;
             text-shadow: 0 0 15px #ff0000;
+            text-align: center;
         }
 
-        /* Chupa hua input box corner mein */
+        /* Corner Controls */
         .secret-area {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            opacity: 0.05;
-            transition: 0.3s;
+            position: fixed; bottom: 10px; right: 10px;
+            opacity: 0.05; transition: 0.3s;
         }
+        .secret-area:hover { opacity: 1; }
 
-        .secret-area:hover {
-            opacity: 1;
+        input, button {
+            background: #000; border: 1px solid #ff0000;
+            color: #ff0000; padding: 10px; outline: none;
+            border-radius: 5px; font-weight: bold;
         }
-
-        input {
-            background: #000;
-            border: 1px solid #ff0000;
-            color: #ff0000;
-            padding: 10px;
-            width: 100px;
-            outline: none;
-        }
-
-        button {
-            background: #ff0000;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 5px;
-        }
+        button { cursor: pointer; background: #330000; }
+        button:hover { background: #ff0000; color: #000; }
     </style>
 </head>
 <body>
 
-    <div class="machine-wrapper">
-        <h1>NEON DECODER</h1>
-        <div class="display-container">
-            <div class="slot">0</div>
-            <div class="slot">0</div>
-            <div class="slot">0</div>
-            <div class="slot">0</div>
-            <div class="slot">0</div>
-        </div>
+    <div id="login-screen">
+        <h2 style="color: #ff0000;">SYSTEM LOCKED</h2>
+        <input type="password" id="adminPass" placeholder="Enter Admin Pass">
+        <br>
+        <button onclick="checkAccess()">ACCESS SYSTEM</button>
     </div>
 
-    <div class="secret-area">
-        <input type="password" id="myCode" maxlength="5" placeholder="5 Digits">
-        <button onclick="startHack()">START</button>
+    <div id="machine-ui">
+        <div class="machine-wrapper">
+            <h1 style="color:#ff0000; text-shadow: 0 0 10px #ff0000;">NEON DECODER</h1>
+            <div class="display-container">
+                <div class="slot">0</div><div class="slot">0</div><div class="slot">0</div><div class="slot">0</div><div class="slot">0</div>
+            </div>
+        </div>
+
+        <div class="secret-area">
+            <input type="password" id="myCode" maxlength="5" placeholder="5 Digit Secret">
+            <button onclick="startHack()">INITIATE</button>
+        </div>
     </div>
 
     <script>
         const s_spin = new Audio('spin.mp3');
         const s_win = new Audio('success.mp3');
+
+        // SITE KA PASSWORD YAHAN HAI:
+        const CORRECT_PASSWORD = "1234"; 
+
+        function checkAccess() {
+            const pass = document.getElementById('adminPass').value;
+            if(pass === CORRECT_PASSWORD) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('machine-ui').style.display = 'block';
+            } else {
+                alert("ACCESS DENIED!");
+            }
+        }
 
         function startHack() {
             const val = document.getElementById('myCode').value;
@@ -121,25 +127,20 @@
                 return;
             }
 
-            // Sound play karne ke liye permission
             s_spin.loop = true;
-            s_spin.play().catch(e => console.log("Click page first"));
+            s_spin.play();
 
             slots.forEach((slot, i) => {
                 let count = 0;
                 let limit = 20 + (i * 10);
-
                 let timer = setInterval(() => {
                     slot.innerText = Math.floor(Math.random() * 10);
                     count++;
-
                     if(count > limit) {
                         clearInterval(timer);
                         slot.innerText = val[i];
-
                         if(i === 4) {
                             s_spin.pause();
-                            s_spin.currentTime = 0;
                             s_win.play();
                         }
                     }
